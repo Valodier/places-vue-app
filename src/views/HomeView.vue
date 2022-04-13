@@ -8,13 +8,24 @@
       Address:
       <input type="text" v-model="newPlacesParams.address" />
       <br />
-      <button v-on:click="placesCreate()">BRING FORTH</button>
+      <button v-on:click="placesCreate()">SUMMON</button>
     </div>
     <div v-for="place in places" :key="place.id">
-      <h2>{{ place.name }}</h2>
-      <h3>{{ place.address }}</h3>
+      <h2>{{ place.id }}</h2>
+      <button v-on:click="placesShow(place)">MORE</button>
       <br />
     </div>
+    <dialog id="place-details">
+      <form method="dialog">
+        <p>Name: {{ currentPlace.name }}</p>
+        <input type="text" v-model="currentPlace.name" />
+        <p>Address: {{ currentPlace.address }}</p>
+        <input type="text" v-model="currentPlace.address" />
+        <br />
+        <button>RELEASE</button>
+        <button v-on:click="placesUpdate(currentPlace)">Edit</button>
+      </form>
+    </dialog>
   </div>
 </template>
 
@@ -26,17 +37,21 @@ export default {
     return {
       message: "Welcome to Vue.js!",
       places: [],
+      currentPlace: {},
       newPlacesParams: {},
       errors: [],
     };
   },
   created: function () {
-    axios.get("/places").then((response) => {
-      this.places = response.data;
-      console.log("Places Index", this.places);
-    });
+    this.placesIndex();
   },
   methods: {
+    placesIndex: function () {
+      axios.get("/places").then((response) => {
+        this.places = response.data;
+        console.log("Places Index", this.places);
+      });
+    },
     placesCreate: function () {
       axios
         .post("/places", this.newPlacesParams)
@@ -47,6 +62,22 @@ export default {
         })
         .catch((error) => {
           this.error = error.response.data.errors;
+        });
+    },
+    placesShow: function (place) {
+      this.currentPlace = place;
+      document.querySelector("#place-details").showModal();
+    },
+    placesUpdate: function (place) {
+      var editPlaceParams = place;
+      axios
+        .patch("/places/" + place.id, editPlaceParams)
+        .then((response) => {
+          console.log("Update successful!", response.data);
+          this.currentPlace = {};
+        })
+        .catch((error) => {
+          console.log((this.error = error.response.data.errors));
         });
     },
   },
