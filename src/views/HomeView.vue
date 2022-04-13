@@ -22,8 +22,11 @@
         <p>Address: {{ currentPlace.address }}</p>
         <input type="text" v-model="currentPlace.address" />
         <br />
-        <button>RELEASE</button>
         <button v-on:click="placesUpdate(currentPlace)">Edit</button>
+        <br />
+        <button v-on:click="placesDestrot(currentPlace)">UNMAKE</button>
+        <br />
+        <button>RELEASE</button>
       </form>
     </dialog>
   </div>
@@ -79,6 +82,13 @@ export default {
         .catch((error) => {
           console.log((this.error = error.response.data.errors));
         });
+    },
+    placesDestroy: function (place) {
+      axios.delete("/places/" + place.id).then((response) => {
+        console.log("UNEXISTED SUCCESSFULLY", response.data);
+        var index = this.place.indexOf(place);
+        this.place.splice(index, 1);
+      });
     },
   },
 };
